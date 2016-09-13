@@ -17,13 +17,15 @@ $RECYCLE.BIN/
 # Windows shortcuts
 *.lnk
 
+# Node.js Modules
+node_modules
+
 # =========================
 # Operating System Files
 # =========================
 
 # OSX
 # =========================
-
 .DS_Store
 .AppleDouble
 .LSOverride
