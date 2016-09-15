@@ -5,15 +5,14 @@
  *
  * Implements:
  *      1. Live reloads browser with BrowserSync.
- *      2. CSS: Sass to CSS conversion, error catching, Autoprefixing, Sourcemaps,
- *         CSS minification, and Merge Media Queries.
- *      3. JS: Concatenates & uglifies Vendor and Custom JS files.
+ *      2. CSS: Less to CSS conversion, error catching, Autoprefixing,
+ *         CSS minification.
+ *      3. JS: Concatenates & uglifies Custom JS files.
  *      4. Images: Minifies PNG, JPEG, GIF and SVG images.
  *      5. Watches files for changes in CSS or JS.
  *      6. Watches files for changes in PHP.
- *      7. Corrects the line endings.
- *      8. InjectCSS instead of browser page reload.
- *      9. Generates .pot file for i18n and l10n.
+ *      7. InjectCSS instead of browser page reload.
+ *      8. Generates .pot file for i18n and l10n.
  *
  * @author Ahmad Awais (@ahmadawais)
  * @author Jobayer Arman (@jobayerarman)
@@ -30,54 +29,51 @@
 
 // START Editing Project Variables.
 // Project related.
-var project                 = 'WPThemeBoilerplate'; // Project Name.
-var projectURL              = 'http://localhost/wp-theme-boilerplate'; // Project URL. Could be something like localhost:8888.
-var productURL              = './'; // Theme/Plugin URL. Leave it like it is, since our gulpfile.js lives in the root folder.
+var project              = 'WPThemeBoilerplate';                      // Project Name.
+var projectURL           = 'http:// localhost/wp-theme-boilerplate';  // Project URL. Could be something like localhost:8888.
+var productURL           = './';                                      // Theme/Plugin URL. Leave it like it is, since our gulpfile.js lives in the root folder.
 
 // Translation related.
-var text_domain             = 'wp-theme-boilerplate'; // Your textdomain here.
-var destFile                = 'wp-theme-boilerplate.pot'; // Name of the transalation file.
-var packageName             = 'wp-theme-boilerplate'; // Package name.
-var bugReport               = 'http://jobayerarman.github.io/'; // Where can users report bugs.
-var lastTranslator          = 'Jobayer Arman <carbonjha@gmail.com>'; // Last translator Email ID.
-var team                    = 'Jobayer Arman <carbonjha@email.com>'; // Team's Email ID.
-var translatePath           = './languages' // Where to save the translation files.
+var text_domain          = 'wp-theme-boilerplate';                    // Your textdomain here.
+var destFile             = 'wp-theme-boilerplate.pot';                // Name of the transalation file.
+var packageName          = 'wp-theme-boilerplate';                    // Package name.
+var bugReport            = 'http:// jobayerarman.github.io/';         // Where can users report bugs.
+var lastTranslator       = 'Jobayer Arman <carbonjha@gmail.com>';     // Last translator Email ID.
+var team                 = 'Jobayer Arman <carbonjha@email.com>';     // Team's Email ID.
+var translatePath        = './languages'                              // Where to save the translation files.
 
 // Style related.
-var styleSRC                = './assets/src/less/main.less'; // Path to main .scss file.
-var styleDestination        = './assets/css/'; // Path to place the compiled CSS file.
+var styleSRC             = './assets/src/less/main.less';             // Path to main .less file.
+var styleDestination     = './assets/css/';                           // Path to place the compiled CSS file.
 
 // JS Custom related.
-var jsCustomSRC             = './assets/src/js/*.js'; // Path to JS custom scripts folder.
-var jsCustomDestination     = './assets/js/'; // Path to place the compiled JS custom scripts file.
-var jsCustomFile            = 'script'; // Compiled JS custom file name.
+var scriptSRC            = './assets/src/js/*.js';                    // Path to JS custom scripts folder.
+var scriptDestination    = './assets/js/';                            // Path to place the compiled JS custom scripts file.
+var scriptFile           = 'script';                                  // Compiled JS custom file name.
 
 // Images related.
-var imagesSRC               = './assets/src/img/**/*.{png,jpg,gif,svg}'; // Source folder of images which should be optimized.
-var imagesDestination       = './assets/img/'; // Destination folder of optimized images. Must be different from the imagesSRC folder.
+var imagesSRC            = './assets/src/img/**/*.{png,jpg,gif,svg}'; // Source folder of images which should be optimized.
+var imagesDestination    = './assets/img/';                           // Destination folder of optimized images. Must be different from the imagesSRC folder.
 
 // Watch files paths.
-var styleWatchFiles         = './assets/src/less/**/*.less'; // Path to all *.scss files inside css folder and inside them.
-var customJSWatchFiles      = './assets/src/js/*.js'; // Path to all custom JS files.
-var projectPHPWatchFiles    = './**/*.php'; // Path to all PHP files.
+var styleWatchFiles      = './assets/src/less/**/*.less';             // Path to all *.scss files inside css folder and inside them.
+var scriptWatchFiles     = './assets/src/js/*.js';                    // Path to all custom JS files.
+var projectPHPWatchFiles = './**/*.php';                              // Path to all PHP files.
 
 
 // Browsers you care about for autoprefixing.
-// Browserlist https        ://github.com/ai/browserslist
+// Browserlist https://github.com/ai/browserslist
 const AUTOPREFIXER_BROWSERS = [
-'last 2 version',
-'> 1%',
-'ie >= 9',
-'ie_mob >= 10',
-'ff >= 30',
-'chrome >= 34',
-'safari >= 7',
-'opera >= 23',
-'ios >= 7',
-'android >= 4',
-'bb >= 10'
+  'android >= 4',
+  'bb >= 10',
+  'chrome >= 34',
+  'ff >= 30',
+  'ie >= 9',
+  'ie_mob >= 10',
+  'ios >= 7',
+  'opera >= 23',
+  'safari >= 7',
 ];
-
 // STOP Editing Project Variables.
 
 /**
@@ -85,30 +81,33 @@ const AUTOPREFIXER_BROWSERS = [
  *
  * Load gulp plugins and assing them semantic names.
  */
-var gulp         = require('gulp'); // Gulp of-course
+var gulp         = require('gulp');                  // Gulp of-course
+var gutil        = require('gulp-util');             // Utility functions for gulp plugins
 
 // CSS related plugins.
-var less         = require('gulp-less'); // Gulp pluign for Sass compilation.
-var minifycss    = require('gulp-uglifycss'); // Minifies CSS files.
-var autoprefixer = require('gulp-autoprefixer'); // Autoprefixing magic.
+var less         = require('gulp-less');             // Gulp pluign for Sass compilation.
+var cssmin       = require('gulp-cssmin');           // Minifies CSS files.
+var autoprefixer = require('gulp-autoprefixer');     // Autoprefixing magic.
 
 // JS related plugins.
-var concat       = require('gulp-concat'); // Concatenates JS files
-var uglify       = require('gulp-uglify'); // Minifies JS files
+var jshint       = require('gulp-jshint');           // JSHint plugin for gulp
+var concat       = require('gulp-concat');           // Concatenates JS files
+var uglify       = require('gulp-uglify');           // Minifies JS files
 
 // Image realted plugins.
-var imagemin     = require('gulp-imagemin'); // Minify PNG, JPEG, GIF and SVG images with imagemin.
+var imagemin     = require('gulp-imagemin');         // Minify PNG, JPEG, GIF and SVG images with imagemin.
 
 // Utility related plugins.
-var rename       = require('gulp-rename'); // Renames files E.g. style.css -> style.min.css
-var lineec       = require('gulp-line-ending-corrector'); // Consistent Line Endings for non UNIX systems. Gulp Plugin for Line Ending Corrector (A utility that makes sure your files have consistent line endings)
-var filter       = require('gulp-filter'); // Enables you to work on a subset of the original files by filtering them using globbing.
-var sourcemaps   = require('gulp-sourcemaps'); // Maps code in a compressed file (E.g. style.css) back to it’s original position in a source file (E.g. structure.scss, which was later combined with other css files to generate style.css)
-var notify       = require('gulp-notify'); // Sends message notification to you
 var browserSync  = require('browser-sync').create(); // Reloads browser and injects CSS. Time-saving synchronised browser testing.
-var reload       = browserSync.reload; // For manual browser reload.
-var wpPot        = require('gulp-wp-pot'); // For generating the .pot file.
-var sort         = require('gulp-sort'); // Recommended to prevent unnecessary changes in pot-file.
+var del          = require('del');                   // Delete files and folders
+var gulpSequence = require('gulp-sequence');         // Run a series of gulp tasks in order
+var notify       = require('gulp-notify');           // Sends message notification to you
+var plumber      = require('gulp-plumber');          // Prevent pipe breaking caused by errors from gulp plugins
+var reload       = browserSync.reload;               // For manual browser reload.
+var rename       = require('gulp-rename');           // Renames files E.g. style.css -> style.min.css
+var size         = require('gulp-size');             // Logs out the total size of files in the stream and optionally the individual file-sizes
+var sort         = require('gulp-sort');             // Recommended to prevent unnecessary changes in pot-file.
+var wpPot        = require('gulp-wp-pot');           // For generating the .pot file.
 
 /**
  * Task: `browser-sync`.
@@ -118,14 +117,10 @@ var sort         = require('gulp-sort'); // Recommended to prevent unnecessary c
  * This task does the following:
  *    1. Sets the project URL
  *    2. Sets inject CSS
- *    3. You may define a custom port
- *    4. You may want to stop the browser from openning automatically
+ *    3. You may want to stop the browser from openning automatically
  */
- gulp.task( 'browser-sync', function() {
+gulp.task( 'browser-sync', function() {
   browserSync.init( {
-
-    // For more options
-    // @link http://www.browsersync.io/docs/options/
 
     // Project URL.
     proxy: projectURL,
@@ -138,114 +133,92 @@ var sort         = require('gulp-sort'); // Recommended to prevent unnecessary c
     // Commnet it to reload browser for every CSS change.
     injectChanges: true,
 
-    // Use a specific port (instead of the one auto-detected by Browsersync).
-    // port: 7000,
-
     // The small pop-over notifications in the browser are not always needed/wanted
     notify: false,
-
-  } );
+  });
 });
 
 
 /**
  * Task: `styles`.
  *
- * Compiles Sass, Autoprefixes it and Minifies CSS.
+ * Compiles LESS, Autoprefixes it and Minifies CSS.
  *
- * This task does the following:
- *    1. Gets the source scss file
- *    2. Compiles Sass to CSS
- *    3. Writes Sourcemaps for it
- *    4. Autoprefixes it and generates style.css
- *    5. Renames the CSS file with suffix .min.css
- *    6. Minifies the CSS file and generates style.min.css
- *    7. Injects CSS or reloads the browser via browserSync
  */
- gulp.task('styles', function () {
-  gulp.src( styleSRC )
-  .pipe( sourcemaps.init() )
-  .pipe( less() )
-  .on('error', console.error.bind(console))
-  .pipe( sourcemaps.write( { includeContent: false } ) )
-  .pipe( sourcemaps.init( { loadMaps: true } ) )
-  .pipe( autoprefixer( AUTOPREFIXER_BROWSERS ) )
+gulp.task('styles', function () {
+  return gulp.src( styleSRC )
+    .pipe( plumber() )
 
-  .pipe( sourcemaps.write ( styleDestination ) )
-    .pipe( lineec() ) // Consistent Line Endings for non UNIX systems.
+    .pipe( less() )
+    .pipe( autoprefixer( AUTOPREFIXER_BROWSERS ) )
     .pipe( gulp.dest( styleDestination ) )
-
-    .pipe( filter( '**/*.css' ) ) // Filtering stream to only css files
-
+    .pipe( size({
+      showFiles: true
+    }) )
     .pipe( browserSync.stream() ) // Reloads style.css if that is enqueued.
 
     .pipe( rename( { suffix: '.min' } ) )
-    .pipe( minifycss( {
-      maxLineLen: 10
+    .pipe( cssmin({
+      keepSpecialComments: false
     }))
-    .pipe( lineec() ) // Consistent Line Endings for non UNIX systems.
     .pipe( gulp.dest( styleDestination ) )
+    .pipe( size({
+      showFiles: true
+    }) )
+    .pipe( browserSync.stream() ); // Reloads style.min.css if that is enqueued.
+});
 
-    .pipe( filter( '**/*.css' ) ) // Filtering stream to only css files
-    .pipe( browserSync.stream() )// Reloads style.min.css if that is enqueued.
-    .pipe( notify( { message: 'TASK: "styles" Completed! 💯', onLast: true } ) )
-  });
 
-
- /**
-  * Task: `customJS`.
+/**
+  * Task: `scripts`.
   *
   * Concatenate and uglify custom JS scripts.
   *
-  * This task does the following:
-  *     1. Gets the source folder for JS custom files
-  *     2. Concatenates all the files and generates custom.js
-  *     3. Renames the JS file with suffix .min.js
-  *     4. Uglifes/Minifies the JS file and generates custom.min.js
   */
-  gulp.task( 'customJS', function() {
-    gulp.src( jsCustomSRC )
-    .pipe( concat( jsCustomFile + '.js' ) )
-    .pipe( lineec() ) // Consistent Line Endings for non UNIX systems.
-    .pipe( gulp.dest( jsCustomDestination ) )
+gulp.task( 'scripts', function() {
+  return gulp.src( scriptSRC )
+    .pipe( plumber() )
+
+    .pipe( jshint() )
+    .pipe( jshint.reporter('jshint-stylish') )
+
+    .pipe( concat( scriptFile + '.js' ) )
+    .pipe( gulp.dest( scriptDestination ) )
+    .pipe( size({
+      showFiles: true
+    }) )
+
     .pipe( rename( {
-      basename: jsCustomFile,
+      basename: scriptFile,
       suffix: '.min'
     }))
     .pipe( uglify() )
-    .pipe( lineec() ) // Consistent Line Endings for non UNIX systems.
-    .pipe( gulp.dest( jsCustomDestination ) )
-    .pipe( notify( { message: 'TASK: "customJs" Completed! 💯', onLast: true } ) );
-  });
+    .pipe( gulp.dest( scriptDestination ) )
+    .pipe( size({
+      showFiles: true
+    }) );
+});
 
 
- /**
+/**
   * Task: `images`.
   *
   * Minifies PNG, JPEG, GIF and SVG images.
   *
-  * This task does the following:
-  *     1. Gets the source of images raw folder
-  *     2. Minifies PNG, JPEG, GIF and SVG images
-  *     3. Generates and saves the optimized images
-  *
-  * This task will run only once, if you want to run it
-  * again, do it with the command `gulp images`.
   */
-  gulp.task( 'images', function() {
-    gulp.src( imagesSRC )
-    .pipe( imagemin( {
-      progressive: true,
-          optimizationLevel: 3, // 0-7 low-high
-          interlaced: true,
-          svgoPlugins: [{removeViewBox: false}]
-        } ) )
-    .pipe(gulp.dest( imagesDestination ))
-    .pipe( notify( { message: 'TASK: "images" Completed! 💯', onLast: true } ) );
-  });
+gulp.task( 'images', function() {
+  gulp.src( imagesSRC )
+  .pipe( imagemin( {
+    interlaced: true,
+    progressive: true,
+    optimizationLevel: 5, // 0-7 low-high
+    svgoPlugins: [{removeViewBox: false}]
+  } ) )
+  .pipe(gulp.dest( imagesDestination ));
+});
 
 
- /**
+/**
   * WP POT Translation File Generator.
   *
   * * This task does the following:
@@ -254,30 +227,33 @@ var sort         = require('gulp-sort'); // Recommended to prevent unnecessary c
   *     3. Applies wpPot with the variable set at the top of this file
   *     4. Generate a .pot file of i18n that can be used for l10n to build .mo file
   */
-  gulp.task( 'translate', function () {
-   return gulp.src( projectPHPWatchFiles )
-   .pipe(sort())
-   .pipe(wpPot( {
-     domain        : text_domain,
-     destFile      : destFile,
-     package       : packageName,
-     bugReport     : bugReport,
-     lastTranslator: lastTranslator,
-     team          : team
+gulp.task( 'translate', function () {
+ return gulp.src( projectPHPWatchFiles )
+   .pipe( sort() )
+   .pipe( wpPot( {
+      domain        : text_domain,
+      destFile      : destFile,
+      package       : packageName,
+      bugReport     : bugReport,
+      lastTranslator: lastTranslator,
+      team          : team
    } ))
-   .pipe(gulp.dest(translatePath))
-   .pipe( notify( { message: 'TASK: "translate" Completed! 💯', onLast: true } ) )
-
- });
+   .pipe( gulp.dest( translatePath ) );
+});
 
 
- /**
+/**
+ * Default Gulp task
+ */
+gulp.task( 'default', gulpSequence( 'styles', 'scripts', 'images' ) );
+
+/**
   * Watch Tasks.
   *
   * Watches for file changes and runs specific tasks.
   */
-  gulp.task( 'default', ['styles', 'customJS', 'images', 'browser-sync'], function () {
+gulp.task( 'serve', ['styles', 'scripts', 'browser-sync'], function () {
   gulp.watch( projectPHPWatchFiles, reload ); // Reload on PHP file changes.
   gulp.watch( styleWatchFiles, [ 'styles' ] ); // Reload on SCSS file changes.
-  gulp.watch( customJSWatchFiles, [ 'customJS', reload ] ); // Reload on customJS file changes.
+  gulp.watch( scriptWatchFiles, [ 'scripts', reload ] ); // Reload on script file changes.
 });
