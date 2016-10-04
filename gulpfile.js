@@ -30,7 +30,7 @@
 // START Editing Project Variables.
 // Project related.
 var project              = 'WPThemeBoilerplate';                      // Project Name.
-var projectURL           = 'http:// localhost/wp-theme-boilerplate';  // Project URL. Could be something like localhost:8888.
+var projectURL           = 'http://localhost/wp-theme-boilerplate';  // Project URL. Could be something like localhost:8888.
 var productURL           = './';                                      // Theme/Plugin URL. Leave it like it is, since our gulpfile.js lives in the root folder.
 
 // Translation related.
@@ -101,13 +101,15 @@ var imagemin     = require('gulp-imagemin');         // Minify PNG, JPEG, GIF an
 var browserSync  = require('browser-sync').create(); // Reloads browser and injects CSS. Time-saving synchronised browser testing.
 var del          = require('del');                   // Delete files and folders
 var gulpSequence = require('gulp-sequence');         // Run a series of gulp tasks in order
-var notify       = require('gulp-notify');           // Sends message notification to you
-var plumber      = require('gulp-plumber');          // Prevent pipe breaking caused by errors from gulp plugins
+var errorHandler = require('gulp-plumber-notifier'); // Plumber then notify
 var reload       = browserSync.reload;               // For manual browser reload.
 var rename       = require('gulp-rename');           // Renames files E.g. style.css -> style.min.css
 var size         = require('gulp-size');             // Logs out the total size of files in the stream and optionally the individual file-sizes
 var sort         = require('gulp-sort');             // Recommended to prevent unnecessary changes in pot-file.
 var wpPot        = require('gulp-wp-pot');           // For generating the .pot file.
+
+
+
 
 /**
  * Task: `browser-sync`.
@@ -147,25 +149,25 @@ gulp.task( 'browser-sync', function() {
  */
 gulp.task('styles', function () {
   return gulp.src( styleSRC )
-    .pipe( plumber() )
+    .pipe( errorHandler() )
 
     .pipe( less() )
     .pipe( autoprefixer( AUTOPREFIXER_BROWSERS ) )
     .pipe( gulp.dest( styleDestination ) )
+    .pipe( browserSync.stream() ) // Reloads style.css if that is enqueued.
     .pipe( size({
       showFiles: true
     }) )
-    .pipe( browserSync.stream() ) // Reloads style.css if that is enqueued.
 
     .pipe( rename( { suffix: '.min' } ) )
     .pipe( cssmin({
       keepSpecialComments: false
     }))
     .pipe( gulp.dest( styleDestination ) )
+    .pipe( browserSync.stream() ) // Reloads style.min.css if that is enqueued.
     .pipe( size({
       showFiles: true
-    }) )
-    .pipe( browserSync.stream() ); // Reloads style.min.css if that is enqueued.
+    }) );
 });
 
 
@@ -177,7 +179,7 @@ gulp.task('styles', function () {
   */
 gulp.task( 'scripts', function() {
   return gulp.src( scriptSRC )
-    .pipe( plumber() )
+    .pipe( errorHandler() )
 
     .pipe( jshint() )
     .pipe( jshint.reporter('jshint-stylish') )
