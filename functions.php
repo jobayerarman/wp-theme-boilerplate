@@ -17,7 +17,7 @@ include_once( get_template_directory() . '/inc/enqueue.php' );
 include_once( get_template_directory() . '/inc/extras.php' );
 // Load Jetpack compatibility file.
 include_once( get_template_directory() . '/inc/jetpack.php' );
-// A custom WP nav walker class to implement the Bootstrap navigation.
+// Register Bootstrap Navigation Walker
 include_once( get_template_directory() . '/inc/navwalker.php' );
 // Theme functions and definitions.
 include_once( get_template_directory() . '/inc/setup.php' );
