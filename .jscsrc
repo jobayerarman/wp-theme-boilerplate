@@ -1,7 +1,5 @@
 {
     "preset": "wordpress",
     "fileExtensions": [ ".js" ],
-    "excludeFiles": [
-    	"js/**.min.js"
-    ]
+    "excludeFiles": [ "node_modules/**/*.js", "assets/js/**.min.js", "gulpfile.js" ]
 }

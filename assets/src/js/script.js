@@ -1,3 +1,3 @@
-$(document).ready(function(){
-	// write scripts here
+$( document ).ready(function() {
+  // Write scripts here
 });
