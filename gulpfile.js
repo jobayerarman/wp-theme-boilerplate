@@ -221,8 +221,8 @@ gulp.task('styles', ['clean:css'], function() {
 
     .pipe(less())
 
-    .pipe( gulpif(config.sourceMaps, sourcemaps.write({includeContent: false}))) // By default the source maps include the source code. Pass false to use the original files.
-    .pipe( gulpif(config.sourceMaps, sourcemaps.init({loadMaps: true})))         // Set to true to load existing maps for source files.
+    .pipe( gulpif(config.sourceMaps, sourcemaps.write({includeContent: false}))) // By default the source maps include the source code
+    .pipe( gulpif(config.sourceMaps, sourcemaps.init({loadMaps: true})))         // Set to true to load existing maps for source files
 
     .pipe( autoprefixer( AUTOPREFIXER_BROWSERS ) )
 
