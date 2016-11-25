@@ -29,43 +29,45 @@
 
 // START Editing Project Variables.
 // Project related.
-var project              = 'WPThemeBoilerplate';                      // Project Name.
-var projectURL           = 'http://localhost/wp-theme-boilerplate';   // Project URL. Could be something like localhost:8888.
-var productURL           = './';                                      // Theme/Plugin URL. Leave it like it is, since our gulpfile.js lives in the root folder.
+var project              = 'WPThemeBoilerplate';                      // Project Name
+var projectURL           = 'http://wptheme.dev';                      // Project URL
+var productURL           = './';                                      // Theme/Plugin URL. Leave it like it is, since our gulpfile.js lives in the root folder
 
 // Translation related.
-var text_domain          = 'wp-theme-boilerplate';                    // Your textdomain here.
-var destFile             = 'wp-theme-boilerplate.pot';                // Name of the transalation file.
-var packageName          = 'wp-theme-boilerplate';                    // Package name.
-var bugReport            = 'http:// jobayerarman.github.io/';         // Where can users report bugs.
-var lastTranslator       = 'Jobayer Arman <carbonjha@gmail.com>';     // Last translator Email ID.
-var team                 = 'Jobayer Arman <carbonjha@email.com>';     // Team's Email ID.
-var translatePath        = './languages'                              // Where to save the translation files.
+var text_domain          = 'wp-theme-boilerplate';                    // Your textdomain here
+var destFile             = 'wp-theme-boilerplate.pot';                // Name of the transalation file
+var packageName          = 'wp-theme-boilerplate';                    // Package name
+var bugReport            = 'http:// jobayerarman.github.io/';         // Where can users report bugs
+var lastTranslator       = 'Jobayer Arman <carbonjha@gmail.com>';     // Last translator Email ID
+var team                 = 'Jobayer Arman <carbonjha@email.com>';     // Team's Email ID
+var translatePath        = './languages'                              // Where to save the translation files
 
 // Style related
 var style = {
-  src    : './assets/src/less/main.less',             // Path to main .less file.
-  dest   : './assets/css/'                            // Path to place the compiled CSS file.
+  src    : './assets/src/less/main.less',             // Path to main .less file
+  dest   : './assets/css/',                           // Path to place the compiled CSS file
+  destFiles  : './assets/css/*.+(css|map)'            // Destination files
 };
 
 // JavaScript related
 var script = {
-  src    : './assets/src/js/*.js',                    // Path to JS custom scripts folder.
-  dest   : './assets/js/',                            // Path to place the compiled JS custom scripts file.
-  file   : 'script.js'                                   // Compiled JS custom file name.
+  src    : './assets/src/js/*.js',                    // Path to JS custom scripts folder
+  dest   : './assets/js/',                            // Path to place the compiled JS custom scripts file
+  file   : 'script.js',                               // Compiled JS custom file name
+  destFiles   : './assets/js/*.js'                    // Destination files
 }
 
 // Images related.
 var image = {
-  src    : './assets/src/img/**/*.{png,jpg,gif,svg}', // Source folder of images which should be optimized.
-  dest   : './assets/img/'                            // Destination folder of optimized images.
+  src    : './assets/src/img/**/*.{png,jpg,gif,svg}', // Source folder of images which should be optimized
+  dest   : './assets/img/'                            // Destination folder of optimized images
 }
 
 // Watch files paths.
 var watch = {
-  style  : './assets/src/less/**/*.less',             // Path to all *.less files inside css folder and inside them.
-  script : './assets/src/js/*.js',                    // Path to all custom JS files.
-  php    : './**/*.php'                               // Path to all PHP files.
+  style  : './assets/src/less/**/*.less',             // Path to all *.less files inside css folder and inside them
+  script : './assets/src/js/*.js',                    // Path to all custom JS files
+  php    : './**/*.php'                               // Path to all PHP files
 }
 
 // Browsers you care about for autoprefixing.
@@ -81,12 +83,6 @@ const AUTOPREFIXER_BROWSERS = [
   'opera >= 23',
   'safari >= 7',
 ];
-
-// production variable
-var config = {
-  production: !!gutil.env.production, // Two exclamations turn undefined into a proper false.
-  sourceMaps:  !gutil.env.production
-};
 // STOP Editing Project Variables.
 
 /**
@@ -129,6 +125,12 @@ var size         = require('gulp-size');             // Logs out the total size 
 var sort         = require('gulp-sort');             // Recommended to prevent unnecessary changes in pot-file.
 var wpPot        = require('gulp-wp-pot');           // For generating the .pot file.
 
+// production variable
+var config = {
+  production: !!gutil.env.production, // Two exclamations turn undefined into a proper false.
+  sourceMaps:  !gutil.env.production
+};
+
 /**
  * Notify Errors
  */
@@ -165,10 +167,10 @@ function errorLog(error) {
  * Cleans destination files
  */
 gulp.task('clean:css', function() {
-  return del([style.dest]);
+  return del([style.destFiles]);
 });
 gulp.task('clean:js', function() {
-  return del([script.dest]);
+  return del([script.destFiles]);
 });
 gulp.task('clean:all', gulpSequence('clean:css', 'clean:js'));
 
@@ -197,7 +199,7 @@ gulp.task( 'browser-sync', function() {
     injectChanges: true,
 
     // The small pop-over notifications in the browser are not always needed/wanted
-    notify: true,
+    notify: false,
   });
 });
 
@@ -325,7 +327,7 @@ gulp.task( 'serve', gulpSequence('styles', 'scripts', 'watch'));
   *
   * Watches for file changes and runs specific tasks.
   */
-gulp.task('watch', ['styles', 'scripts', 'browser-sync'], function() {
+gulp.task('watch', ['browser-sync'], function() {
   gulp.watch(watch.style, ['styles']);         // Reload on less file changes.
   gulp.watch(watch.php, ['watch-php']);        // Reload on PHP file changes.
   gulp.watch(watch.script, ['watch-scripts']); // Reload on script file changes.
