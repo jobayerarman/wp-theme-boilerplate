@@ -1,22 +1,25 @@
-# wp-theme-boilerplate
+# WordPress Theme Development Boilerplate
 WordPress Theme Boilerplate with well organised project structure and modern build tools to quickstart your theme development!
 
-[![built with gulp](https://img.shields.io/badge/gulp-supported_project-eb4a4b.svg?logo=data%3Aimage%2Fpng%3Bbase64%2CiVBORw0KGgoAAAANSUhEUgAAAAYAAAAOCAMAAAA7QZ0XAAAABlBMVEUAAAD%2F%2F%2F%2Bl2Z%2FdAAAAAXRSTlMAQObYZgAAABdJREFUeAFjAAFGRjSSEQzwUgwQkjAFAAtaAD0Ls2nMAAAAAElFTkSuQmCC)](http://gulpjs.com/)
+[![built with Gulp](https://img.shields.io/badge/-gulp-eb4a4b.svg?logo=data%3Aimage%2Fpng%3Bbase64%2CiVBORw0KGgoAAAANSUhEUgAAAAYAAAAOCAMAAAA7QZ0XAAAABlBMVEUAAAD%2F%2F%2F%2Bl2Z%2FdAAAAAXRSTlMAQObYZgAAABdJREFUeAFjAAFGRjSSEQzwUgwQkjAFAAtaAD0Ls2nMAAAAAElFTkSuQmCC)](http://gulpjs.com/)
 
 ## Features
 
-* Less for stylesheets
-* [BrowserSync](http://www.browsersync.io/) for synchronized browser testing
+* Based on [underscores](http://underscores.me/)
+* [gulp](http://gulpjs.com/) build script that compiles Less, checks for JavaScript errors, optimizes images, and concatenates and minifies files
+* [BrowserSync](http://www.browsersync.io/) for keeping multiple browsers and devices synchronized while testing, along with injecting updated CSS and JS into your browser while you're developing
 * [Bootstrap 3](http://getbootstrap.com/) for a front-end framework
 
 ## Requirements
 
 Make sure all dependencies have been installed before moving on:
 
-* [PHP](http://php.net/manual/en/install.php) >= 5.5.x
-* [Node.js](http://nodejs.org/) >= 4.5
-* [Yarn](https://yarnpkg.com/) or [npm](https://www.npmjs.com/package/npm)
-* [gulp-cli](https://www.npmjs.com/package/gulp-cli) >= 1.2.0
+| Prerequisite    | How to check | How to install |
+| --------------- | ------------ | ------------- |
+| Node.js >= 4.5  | `node -v`    | [nodejs.org](http://nodejs.org/) |
+| npm >= 4.0.0    | `npm -v`     | `npm` comes pre-installed with `node` |
+| yarn >= 0.17.8  | `yarn -V`    | [yarn](https://yarnpkg.com/) |
+| gulp >= 3.8.10  | `gulp -v`    | `npm install -g gulp` |
 
 ## Theme structure
 
@@ -76,6 +79,9 @@ themes/your-theme-name/         # → Root of your theme
 ├── single.php                  # → Template for displaying all single posts
 └── style.css                   # → Theme meta information
 ```
+## Theme installation
+
+Install boilerplate by copying the project into a new folder within your WordPress themes directory and replace `your-theme-name` with the name of your theme.
 
 ## Theme development
 
@@ -89,14 +95,22 @@ From the command line on your host machine, navigate to the theme directory then
 C:\wamp\www\project-name\wp-content\themes\your-theme-name>
 yarn install
 ```
-
 You now have all the necessary dependencies to run the build process.
 
 ### Build commands
 
-* `gulp` — Compile assets for development
-* `gulp serve` — Compile assets for development, start BrowserSync session
-* `gulp --production` — Compile assets for production
+* `gulp` — Compile and optimize the files in your assets directory
+* `gulp serve` — Start BrowserSync session and compile assets when file changes are made
+* `gulp --production` — Compile assets for production (no source maps)
+
+### Using BrowserSync
+
+To use BrowserSync during `gulp serve` or `gulp watch` you need to update `projectURL` at line `#33` of `gulpfile.js` to reflect your local development hostname.
+
+If your local development URL is `https://project-name.dev`, update the file to read:
+```javascript
+  var projectURL           = 'http://project-name.dev';
+```
 
 ## Contributing
 
