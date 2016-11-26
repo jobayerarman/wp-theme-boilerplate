@@ -52,14 +52,14 @@ themes/your-theme-name/         # → Root of your theme
 │   ├── content-page.php          # → Template part for displaying page content in page.php
 │   ├── content-search.php        # → Template part for displaying results in search pages
 │   └── content.php               # → Template part for displaying posts
-├── .editorconfig               # → Composer autoloader, theme includes
-├── .gitattributes              # → Composer autoloader, theme includes
-├── .gitignore                  # → Composer autoloader, theme includes
-├── .jscsrc                     # → Composer autoloader, theme includes
-├── .jshintignore               # → Composer autoloader, theme includes
-├── .jshintrc                   # → Composer autoloader, theme includes
+├── .editorconfig               # → Consistent coding styles between different editors
+├── .gitattributes              # → Defining attributes per path
+├── .gitignore                  # → Specifies intentionally untracked files to ignore
+├── .jscsrc                     # → JavaScript code style linter and formatter
+├── .jshintignore               # → Specifies files and path ignored by JSHint
+├── .jshintrc                   # → Flags suspicious usage in programs written in JavaScript
 ├── 404.php                     # → Template for displaying 404 pages
-├── README.md                   # → Composer autoloader, theme includes
+├── README.md                   # → Project description
 ├── archive.php                 # → Template for displaying archive pages
 ├── comments.php                # → Template for displaying comments
 ├── footer.php                  # → Template for displaying the footer
@@ -77,10 +77,6 @@ themes/your-theme-name/         # → Root of your theme
 └── style.css                   # → Theme meta information
 ```
 
-## Theme setup
-
-
-
 ## Theme development
 
 This project uses [Gulp](http://gulpjs.org/) as a build tool and you can use [Yarn](https://yarnpkg.com/) to manage front-end packages.
@@ -90,8 +86,8 @@ This project uses [Gulp](http://gulpjs.org/) as a build tool and you can use [Ya
 From the command line on your host machine, navigate to the theme directory then run `yarn install`:
 
 ```shell
-# @ example.com/site/web/app/themes/your-theme-name
-$ yarn install
+C:\wamp\www\project-name\wp-content\themes\your-theme-name>
+yarn install
 ```
 
 You now have all the necessary dependencies to run the build process.
