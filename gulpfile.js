@@ -44,17 +44,17 @@ var translatePath        = './languages'                              // Where t
 
 // Style related
 var style = {
-  src    : './assets/src/less/main.less',             // Path to main .less file
-  dest   : './assets/css/',                           // Path to place the compiled CSS file
-  destFiles  : './assets/css/*.+(css|map)'            // Destination files
+  src    : './assets/src/styles/main.less',             // Path to main .less file
+  dest   : './assets/styles/',                           // Path to place the compiled CSS file
+  destFiles  : './assets/styles/*.+(css|map)'            // Destination files
 };
 
 // JavaScript related
 var script = {
-  src    : './assets/src/js/*.js',                    // Path to JS custom scripts folder
-  dest   : './assets/js/',                            // Path to place the compiled JS custom scripts file
+  src    : './assets/src/scripts/*.js',                    // Path to JS custom scripts folder
+  dest   : './assets/scripts/',                            // Path to place the compiled JS custom scripts file
   file   : 'script.js',                               // Compiled JS custom file name
-  destFiles   : './assets/js/*.js'                    // Destination files
+  destFiles   : './assets/scripts/*.js'                    // Destination files
 }
 
 // Images related.
@@ -65,23 +65,19 @@ var image = {
 
 // Watch files paths.
 var watch = {
-  style  : './assets/src/less/**/*.less',             // Path to all *.less files inside css folder and inside them
-  script : './assets/src/js/*.js',                    // Path to all custom JS files
+  style  : './assets/src/styles/**/*.less',             // Path to all *.less files inside css folder and inside them
+  script : './assets/src/scripts/*.js',                    // Path to all custom JS files
   php    : './**/*.php'                               // Path to all PHP files
 }
 
 // Browsers you care about for autoprefixing.
 // Browserlist https://github.com/ai/browserslist
 const AUTOPREFIXER_BROWSERS = [
-  'android >= 4',
-  'bb >= 10',
-  'chrome >= 34',
-  'ff >= 30',
-  'ie >= 9',
-  'ie_mob >= 10',
-  'ios >= 7',
-  'opera >= 23',
-  'safari >= 7',
+  'last 2 versions',
+  'ie 8',
+  'ie 9',
+  'android 4',
+  'opera 12'
 ];
 // STOP Editing Project Variables.
 
@@ -95,7 +91,7 @@ var gutil        = require('gulp-util');             // Utility functions for gu
 
 // CSS related plugins.
 var less         = require('gulp-less');             // Gulp pluign for Sass compilation.
-var cssmin       = require('gulp-cssmin');           // Minifies CSS files.
+var cleancss     = require('gulp-clean-css');         // Minifies CSS files.
 var autoprefixer = require('gulp-autoprefixer');     // Autoprefixing magic.
 var sourcemaps   = require('gulp-sourcemaps');       // Maps code in a compressed file (E.g. style.css) back to it’s original position in a source file.
 
@@ -103,9 +99,6 @@ var sourcemaps   = require('gulp-sourcemaps');       // Maps code in a compresse
 var jshint       = require('gulp-jshint');           // JSHint plugin for gulp
 var concat       = require('gulp-concat');           // Concatenates JS files
 var uglify       = require('gulp-uglify');           // Minifies JS files
-
-// HTML template engine
-var processhtml  = require('gulp-processhtml');      // Process html files at build time to modify them depending on the release environment
 
 // Image realted plugins.
 var imagemin     = require('gulp-imagemin');         // Minify PNG, JPEG, GIF and SVG images with imagemin.
@@ -211,8 +204,7 @@ gulp.task( 'browser-sync', function() {
  *
  */
 var minifyCss = lazypipe()
-  .pipe(rename, {suffix: '.min'})
-  .pipe(cssmin, {keepSpecialComments: false});
+  .pipe(cleancss, {keepSpecialComments: false});
 
 gulp.task('styles', ['clean:css'], function() {
   return gulp.src(style.src)
@@ -221,14 +213,14 @@ gulp.task('styles', ['clean:css'], function() {
 
     .pipe(less())
 
-    .pipe( gulpif(config.sourceMaps, sourcemaps.write({includeContent: false}))) // By default the source maps include the source code
-    .pipe( gulpif(config.sourceMaps, sourcemaps.init({loadMaps: true})))         // Set to true to load existing maps for source files
+    .pipe(gulpif(config.sourceMaps, sourcemaps.write({includeContent: false}))) // By default the source maps include the source code
+    .pipe(gulpif(config.sourceMaps, sourcemaps.init({loadMaps: true})))         // Set to true to load existing maps for source files
 
-    .pipe( autoprefixer( AUTOPREFIXER_BROWSERS ) )
+    .pipe(autoprefixer( AUTOPREFIXER_BROWSERS ) )
 
-    .pipe( gulpif(config.sourceMaps, sourcemaps.write('.')))
+    .pipe(gulpif(config.sourceMaps, sourcemaps.write('.')))
 
-    .pipe( gulpif(config.production, minifyCss()))
+    .pipe(gulpif(config.production, minifyCss()))
 
 
     .pipe(gulp.dest(style.dest))
@@ -248,7 +240,6 @@ gulp.task('styles', ['clean:css'], function() {
   *
   */
 var minifyScripts = lazypipe()
-  .pipe(rename, {suffix: '.min'})
   .pipe(uglify);
 
 gulp.task( 'scripts', ['clean:js'], function() {
