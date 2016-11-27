@@ -4,10 +4,15 @@
   "description": "WordPress Theme Boilerplate based on underscore with well organised project structure and build tools to quickstart your theme development!",
   "repository": {
     "type": "git",
-    "url": "https://github.com/jobayerarman/wp-theme-boilerplate"
+    "url": "https://github.com/jobayerarman/wp-theme-boilerplate.git"
   },
-  "author": "Jobayer Arman",
-  "license": "MIT",
+  "author": "Jobayer Arman <carbonjha@gmail.com>",
+  "licenses": [
+    {
+      "type": "MIT",
+      "url": "http://opensource.org/licenses/MIT"
+    }
+  ],
   "bugs": {
     "url": "https://github.com/jobayerarman/wp-theme-boilerplate/issues"
   },
