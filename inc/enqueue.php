@@ -4,7 +4,7 @@
     function wp_theme_boilerplate_load_styles() {
         // Register Styles
         wp_register_style('font-awesome_style', '//cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css');
-        wp_register_style('wp_theme_boilerplate_main_style', get_template_directory_uri() . '/assets/css/main.css');
+        wp_register_style('wp_theme_boilerplate_main_style', get_template_directory_uri() . '/assets/styles/main.css');
 
         // Enqueue Styles
         wp_enqueue_style( 'wp-theme-boilerplate-style', get_stylesheet_uri() );
@@ -30,7 +30,7 @@
         wp_enqueue_script('bootstrap-scripts');
 
         // Custom Scripts
-        wp_register_script('wp_theme_boilerplate_custom_script', get_template_directory_uri() . '/assets/js/script.js', array('jquery'), null, true);
+        wp_register_script('wp_theme_boilerplate_custom_script', get_template_directory_uri() . '/assets/scripts/script.js', array('jquery'), null, true);
         wp_enqueue_script('wp_theme_boilerplate_custom_script');
 
         if ( is_singular() && comments_open() && get_option( 'thread_comments' ) ) {
