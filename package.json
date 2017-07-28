@@ -1,6 +1,6 @@
 {
   "name": "wp-theme-boilerplate",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "WordPress Theme Boilerplate based on underscore with well organised project structure and build tools to quickstart your theme development!",
   "repository": {
     "type": "git",
