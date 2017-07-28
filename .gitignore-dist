@@ -1,12 +1,18 @@
 # .distignore
-node_modules
 dist
+assets/src
+node_modules
 *.zip
 .DS_Store
 
 yarn.lock
 package.json
-.gitignore
-.distignore
+gulpfile.js
+
 .git
+.gitignore
+.gitignore-dist
 .gitmodules
+.jscsrc
+.jshintignore
+.jshintrc

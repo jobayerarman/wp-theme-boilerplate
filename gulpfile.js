@@ -141,6 +141,7 @@ var imagemin     = require('gulp-imagemin');         // Minify PNG, JPEG, GIF an
 
 // Github related plugins
 var fs           = require('fs');
+var git          = require('gulp-git');
 var bump         = require('gulp-bump');
 var shell        = require('gulp-shell');
 var prompt       = require('gulp-prompt');
