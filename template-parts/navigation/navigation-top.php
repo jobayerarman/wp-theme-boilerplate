@@ -2,7 +2,7 @@
 /**
  * Displays top navigation
  *
- * @package desher-khobor
+ * @package wp-theme-boilerplate
  */
 ?>
 

@@ -1,7 +1,7 @@
 /**
  * Gulpfile.
  *
- * Gulp with WordPress.
+ * Gulp for WordPress Theme.
  *
  * Implements:
  *      1. Live reloads browser with BrowserSync.
@@ -29,15 +29,53 @@
 
 // START Editing Project Variables.
 // Project related.
-var project              = 'WPThemeBoilerplate';                      // Project Name
+var project              = 'wp-theme-boilerplate';                    // Project Name
+var theme                = 'wp_theme_boilerplate';                    // Theme Name
+var package              = 'wp-theme-boilerplate';                    // Package Name
 var projectURL           = 'http://wptheme.dev';                      // Project URL
-var productURL           = './';                                      // Theme/Plugin URL. Leave it like it is, since our gulpfile.js lives in the root folder
+var productURL           = './';                                      // Theme URL. Gulpfile.js lives in the root folder
+var build                = './buildtheme/';                           // Files that you want to package into a zip go here
+var buildInclude  = [
+    // include common file types
+    '**/*.php',
+    '**/*.html',
+    '**/*.css',
+    '**/*.js',
+    '**/*.jpg',
+    '**/*.png',
+    '**/*.svg',
+    '**/*.ttf',
+    '**/*.otf',
+    '**/*.eot',
+    '**/*.woff',
+    '**/*.woff2',
+
+    // include specific files and folders
+    'screenshot.png',
+
+    // exclude files and folders
+    '!node_modules/**/*',
+    '!files/**/*',
+    '!style.css.map',
+    '!gulpfile.js',
+    '!assets/src/styles/*',
+    '!assets/src/scripts/*'
+  ];
+
+// Github Configuration
+var settings = {
+  branch: {
+    master: "master",
+    dist: "dist"
+  },
+  remote: 'origin'
+}
 
 // Translation related.
 var text_domain          = 'wp-theme-boilerplate';                    // Your textdomain here
 var destFile             = 'wp-theme-boilerplate.pot';                // Name of the transalation file
 var packageName          = 'wp-theme-boilerplate';                    // Package name
-var bugReport            = 'http:// jobayerarman.github.io/';         // Where can users report bugs
+var bugReport            = 'http://jobayerarman.github.io/';          // Where can users report bugs
 var lastTranslator       = 'Jobayer Arman <carbonjha@gmail.com>';     // Last translator Email ID
 var team                 = 'Jobayer Arman <carbonjha@email.com>';     // Team's Email ID
 var translatePath        = './languages'                              // Where to save the translation files
@@ -91,7 +129,7 @@ var gutil        = require('gulp-util');             // Utility functions for gu
 
 // CSS related plugins.
 var less         = require('gulp-less');             // Gulp pluign for Sass compilation.
-var cleancss     = require('gulp-clean-css');         // Minifies CSS files.
+var cleancss     = require('gulp-clean-css');        // Minifies CSS files.
 var autoprefixer = require('gulp-autoprefixer');     // Autoprefixing magic.
 var sourcemaps   = require('gulp-sourcemaps');       // Maps code in a compressed file (E.g. style.css) back to it’s original position in a source file.
 
@@ -102,6 +140,14 @@ var uglify       = require('gulp-uglify');           // Minifies JS files
 
 // Image realted plugins.
 var imagemin     = require('gulp-imagemin');         // Minify PNG, JPEG, GIF and SVG images with imagemin.
+
+// Github related plugins
+var fs           = require('fs');
+var bump         = require('gulp-bump');
+var shell        = require('gulp-shell');
+var prompt       = require('gulp-prompt');
+var replace      = require('gulp-replace');
+var gitChangelog = require('gulp-conventional-changelog');
 
 // Utility related plugins.
 var browserSync  = require('browser-sync').create(); // Reloads browser and injects CSS. Time-saving synchronised browser testing.
@@ -165,7 +211,10 @@ gulp.task('clean:css', function() {
 gulp.task('clean:js', function() {
   return del([script.destFiles]);
 });
-gulp.task('clean:all', gulpSequence('clean:css', 'clean:js'));
+gulp.task('clean:build', function() {
+  return del(build);
+});
+gulp.task('clean:all', gulpSequence('clean:css', 'clean:js', 'clean:build'));
 
 /**
  * Task: `browser-sync`.
@@ -183,6 +232,9 @@ gulp.task( 'browser-sync', function() {
     // Project URL.
     proxy: projectURL,
 
+    // Will not attempt to determine your network status, assumes you're ONLINE
+    online: true,
+
     // `true` Automatically open the browser with BrowserSync live server.
     // `false` Stop the browser from automatically opening.
     open: false,
@@ -196,6 +248,130 @@ gulp.task( 'browser-sync', function() {
   });
 });
 
+/**
+ * Theme Dev Setup
+ *
+ * Task:
+ */
+gulp.task('update-function-name', function() {
+  return gulp.src([ './**/*.php' ])
+    .pipe(replace( 'wp_theme_boilerplate', theme ))
+    .pipe(gulp.dest( './' ));
+});
+gulp.task('update-package-name', function() {
+  return gulp.src([ './**/*.php' ])
+    .pipe(replace( 'wp-theme-boilerplate', package ))
+    .pipe(gulp.dest( './' ));
+});
+gulp.task('update:all-name', gulpSequence('update-function-name', 'update-package-name'));
+
+/**
+ * Github release workflow
+ *
+ * Task: bump version
+ */
+gulp.task( 'bump-version', function () {
+  return gulp.src(['./package.json'])
+    .pipe(bump({type: 'patch'}).on('error', gutil.log))
+    .pipe(gulp.dest('./'));
+});
+
+gulp.task('update-wp-style-css', function(cb) {
+  var read  = fs.createReadStream('./style.css');
+      write = fs.createWriteStream('./style.css', {flags: 'r+'});
+
+  return read
+    .pipe(replacestream(/(Version:)(\s*)(.*)/, '$1$2' + getPackageJsonVersion()))
+    .pipe(write);
+});
+
+gulp.task('bump:all', gulpSequence('bump-version', 'update-wp-style-css'));
+
+/**
+ * Github release workflow
+ *
+ * Task: generate a changelog
+ */
+gulp.task('changelog', function () {
+  return gulp.src('CHANGELOG.md', { buffer: false })
+    .pipe( gitChangelog({ preset: 'angular' }))
+    .pipe( gulp.dest('./') );
+});
+
+/**
+ * Github release workflow
+ *
+ * Task: commit changes to github
+ */
+gulp.task( 'commit-changes', function () {
+  return gulp.src('.')
+    .pipe(git.add())
+    .pipe(git.commit('[Prerelease] Bumped version number'));
+});
+
+/**
+ * Github release workflow
+ *
+ * Task: commit changes to github
+ */
+gulp.task( 'push-changes', function (cb) {
+  git.push( settings.remote, settings.branch.master, cb );
+});
+
+function getPackageJsonVersion() {
+  return JSON.parse(fs.readFileSync('./package.json', 'utf8')).version;
+}
+
+/**
+ * Github release workflow
+ *
+ * Task: release to github
+ */
+gulp.task('release', function(cb) {
+  gulp.src('/')
+  .pipe(prompt.prompt([{
+    type: 'confirm',
+    name: 'task',
+    message: 'This will deploy to the ' + settings.branch.dist + ' Branch. It auto commits and pushes to the ' + settings.branch.master + '. Sure?'
+  }],
+  function(res) {
+    runSequence(
+      'bump:all',
+      'deploy',
+      function (error) {
+        if (error) {
+          console.log(error.message);
+        } else {
+          console.log('RELEASE FINISHED SUCCESSFULLY: ' + getPackageJsonVersion());
+        }
+        cb(error);
+      });
+  }));
+});
+
+gulp.task('deploy', function() {
+  return gulp.src('/', {read: false})
+  .pipe(shell(
+    [
+    'git checkout ' + settings.branch.master,
+    'git add --all',
+    'git commit -m "Auto-Commit for deployment "'+ getPackageJsonVersion(),
+    'git tag -a '+ getPackageJsonVersion() + '-dev -m "Version' + getPackageJsonVersion() + '"',
+    'git push ' + settings.remote + ' ' + settings.branch.master + ' ' + getPackageJsonVersion() + '-dev',
+    'git checkout -B ' + settings.branch.dist,
+    'rm .gitignore',
+    'mv .gitignore-dist .gitignore',
+    'git rm -r --cached .',
+    'git add --all',
+    'git commit -m "build for release version "' + getPackageJsonVersion(),
+    'git tag -a '+ getPackageJsonVersion() + '-dist -m "Version' + getPackageJsonVersion() + '"',
+    'git push --force ' + settings.remote + ' ' + settings.branch.dist + ' ' + getPackageJsonVersion() + '-dist',
+    'git checkout ' + settings.branch.master,
+    'git branch -D ' + settings.branch.dist,
+    'echo "Deployed Version: "' + getPackageJsonVersion()
+    ],
+    {ignoreErrors: true}));
+});
 
 /**
  * Task: `styles`.
@@ -299,6 +475,45 @@ gulp.task( 'translate', function() {
       team           : team
    }))
    .pipe( gulp.dest(translatePath));
+});
+
+/**
+  * Clean gulp cache
+  */
+  gulp.task('clear', function () {
+    cache.clearAll();
+  });
+
+/**
+  * Build task that moves essential theme files for production-ready sites
+  *
+  * buildFiles copies all the files in buildInclude to build folder - check variable values at the top
+  * buildImages copies all the images from img folder in assets while ignoring images inside raw folder if any
+  */
+  gulp.task('buildFiles', function() {
+    return  gulp.src(buildInclude)
+    .pipe(gulp.dest(build))
+    .pipe(notify({ message: 'Copy from buildFiles complete', onLast: true }));
+  });
+
+/**
+  * Zipping build directory for distribution
+  *
+  * Taking the build folder, which has been cleaned, containing optimized files and zipping it up to send out as an installable theme
+  */
+  gulp.task('buildZip', function () {
+    return  gulp.src(build+'/**/')
+    .pipe(zip(project+'.zip'))
+    .pipe(gulp.dest('./'));
+  });
+
+// Package Distributable Theme
+gulp.task( 'build', function(cb) {
+  gulpSequence('clean:all', 'styles', 'scripts', 'buildFiles', 'buildZip', 'clean:build', cb);
+});
+// Package Distributable Theme
+gulp.task( 'build-bump', function(cb) {
+  gulpSequence('clean:all', 'bump:all', 'styles', 'scripts', 'buildFiles', 'buildZip', 'clean:build', cb);
 });
 
 

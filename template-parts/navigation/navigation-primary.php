@@ -2,8 +2,7 @@
 /**
  * Displays primary navigation
  *
- * @package Desher_Khobor
- * @version 1.0
+ * @package wp-theme-boilerplate
  */
 
 ?>

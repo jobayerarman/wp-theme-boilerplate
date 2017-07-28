@@ -1,0 +1,12 @@
+# .distignore
+node_modules
+dist
+*.zip
+.DS_Store
+
+yarn.lock
+package.json
+.gitignore
+.distignore
+.git
+.gitmodules
