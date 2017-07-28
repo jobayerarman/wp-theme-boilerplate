@@ -1,7 +1,7 @@
 /**
  * Gulpfile.
  *
- * Gulp for WordPress Theme.
+ * Gulp Workflow for WordPress Theme.
  *
  * Implements:
  *      1. Live reloads browser with BrowserSync.
@@ -14,9 +14,7 @@
  *      7. InjectCSS instead of browser page reload.
  *      8. Generates .pot file for i18n and l10n.
  *
- * @author Ahmad Awais (@ahmadawais)
  * @author Jobayer Arman (@jobayerarman)
- * @version 1.0.3
  */
 
 /**
@@ -253,15 +251,17 @@ gulp.task( 'browser-sync', function() {
  *
  * Task:
  */
-gulp.task('update-function-name', function() {
+gulp.task('update-function-name', function(done) {
   return gulp.src([ './**/*.php' ])
     .pipe(replace( 'wp_theme_boilerplate', theme ))
-    .pipe(gulp.dest( './' ));
+    .pipe(gulp.dest( './' ))
+    done();
 });
-gulp.task('update-package-name', function() {
+gulp.task('update-package-name', function(done) {
   return gulp.src([ './**/*.php' ])
     .pipe(replace( 'wp-theme-boilerplate', package ))
-    .pipe(gulp.dest( './' ));
+    .pipe(gulp.dest( './' ))
+    done();
 });
 gulp.task('update:all-name', gulpSequence('update-function-name', 'update-package-name'));
 
@@ -270,19 +270,18 @@ gulp.task('update:all-name', gulpSequence('update-function-name', 'update-packag
  *
  * Task: bump version
  */
-gulp.task( 'bump-version', function () {
+gulp.task( 'bump-version', function (done) {
   return gulp.src(['./package.json'])
     .pipe(bump({type: 'patch'}).on('error', gutil.log))
-    .pipe(gulp.dest('./'));
+    .pipe(gulp.dest('./'))
+    done();
 });
 
-gulp.task('update-wp-style-css', function(cb) {
-  var read  = fs.createReadStream('./style.css');
-      write = fs.createWriteStream('./style.css', {flags: 'r+'});
-
-  return read
-    .pipe(replacestream(/(Version:)(\s*)(.*)/, '$1$2' + getPackageJsonVersion()))
-    .pipe(write);
+gulp.task('update-wp-style-css', function(done) {
+  return gulp.src(['./style.css'])
+    .pipe(replace( /(Version:)(\s*)(.*)/, '$1$2' + getPackageJsonVersion() ))
+    .pipe(gulp.dest('./'))
+    done();
 });
 
 gulp.task('bump:all', gulpSequence('bump-version', 'update-wp-style-css'));
@@ -350,25 +349,26 @@ gulp.task('release', function(cb) {
 });
 
 gulp.task('deploy', function() {
+  var version = getPackageJsonVersion();
   return gulp.src('/', {read: false})
   .pipe(shell(
     [
     'git checkout ' + settings.branch.master,
     'git add --all',
-    'git commit -m "Auto-Commit for deployment "'+ getPackageJsonVersion(),
-    'git tag -a '+ getPackageJsonVersion() + '-dev -m "Version' + getPackageJsonVersion() + '"',
-    'git push ' + settings.remote + ' ' + settings.branch.master + ' ' + getPackageJsonVersion() + '-dev',
+    'git commit -m "Auto-Commit for deployment "'+ version,
+    'git tag -a '+ version + '-dev -m "Version' + version + '"',
+    'git push ' + settings.remote + ' ' + settings.branch.master + ' ' + version + '-dev',
     'git checkout -B ' + settings.branch.dist,
     'rm .gitignore',
     'mv .gitignore-dist .gitignore',
     'git rm -r --cached .',
     'git add --all',
-    'git commit -m "build for release version "' + getPackageJsonVersion(),
-    'git tag -a '+ getPackageJsonVersion() + '-dist -m "Version' + getPackageJsonVersion() + '"',
-    'git push --force ' + settings.remote + ' ' + settings.branch.dist + ' ' + getPackageJsonVersion() + '-dist',
+    'git commit -m "build for release version "' + version,
+    'git tag -a '+ version + '-dist -m "Version' + version + '"',
+    'git push --force ' + settings.remote + ' ' + settings.branch.dist + ' ' + version + '-dist',
     'git checkout ' + settings.branch.master,
     'git branch -D ' + settings.branch.dist,
-    'echo "Deployed Version: "' + getPackageJsonVersion()
+    'echo "Deployed Version: "' + version
     ],
     {ignoreErrors: true}));
 });
