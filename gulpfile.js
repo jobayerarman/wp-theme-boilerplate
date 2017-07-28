@@ -335,7 +335,7 @@ gulp.task('release', function(cb) {
     message: 'This will deploy to the ' + settings.branch.dist + ' Branch. It auto commits and pushes to the ' + settings.branch.master + '. Sure?'
   }],
   function(res) {
-    runSequence(
+    gulpSequence(
       'bump:all',
       'deploy',
       function (error) {
