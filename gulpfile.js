@@ -312,7 +312,7 @@ gulp.task( 'commit-changes', function () {
 /**
  * Github release workflow
  *
- * Task: commit changes to github
+ * Task: push changes to github
  */
 gulp.task( 'push-changes', function (cb) {
   git.push( settings.remote, settings.branch.master, cb );
