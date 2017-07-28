@@ -1,0 +1,18 @@
+# .distignore
+dist
+assets/src
+node_modules
+*.zip
+.DS_Store
+
+yarn.lock
+package.json
+gulpfile.js
+
+.git
+.gitignore
+.gitignore-dist
+.gitmodules
+.jscsrc
+.jshintignore
+.jshintrc
