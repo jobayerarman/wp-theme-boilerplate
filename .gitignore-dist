@@ -13,6 +13,7 @@ gulpfile.js
 .gitignore
 .gitignore-dist
 .gitmodules
+.gitattributes
 .jscsrc
 .jshintignore
 .jshintrc
