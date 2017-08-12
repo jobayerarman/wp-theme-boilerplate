@@ -2,6 +2,7 @@
 WordPress Theme Boilerplate with well organised project structure and modern build tools to quickstart your theme development!
 
 [![built with Gulp](https://img.shields.io/badge/-gulp-eb4a4b.svg?logo=data%3Aimage%2Fpng%3Bbase64%2CiVBORw0KGgoAAAANSUhEUgAAAAYAAAAOCAMAAAA7QZ0XAAAABlBMVEUAAAD%2F%2F%2F%2Bl2Z%2FdAAAAAXRSTlMAQObYZgAAABdJREFUeAFjAAFGRjSSEQzwUgwQkjAFAAtaAD0Ls2nMAAAAAElFTkSuQmCC)](http://gulpjs.com/)
+[![license](https://img.shields.io/github/license/mashape/apistatus.svg)](https://github.com/jobayerarman/wp-theme-boilerplate/blob/master/LICENSE.md)
 
 ## Features
 
