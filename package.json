@@ -1,6 +1,6 @@
 {
   "name": "wp-theme-boilerplate",
-  "version": "2.0.1",
+  "version": "2.2.0",
   "description": "WordPress Theme Boilerplate based on underscore with well organised project structure and build tools to quickstart your theme development!",
   "repository": {
     "type": "git",
@@ -52,6 +52,7 @@
     "jshint": "^2.9.3",
     "jshint-stylish": "^2.2.1",
     "lazypipe": "^1.0.1",
-    "replacestream": "^4.0.2"
+    "replacestream": "^4.0.2",
+    "semver": "^5.4.1"
   }
 }

@@ -23,3 +23,14 @@ include_once( get_template_directory() . '/inc/navwalker.php' );
 include_once( get_template_directory() . '/inc/setup.php' );
 // Custom template tags for this theme.
 include_once( get_template_directory() . '/inc/template-tags.php' );
+// Theme Updater
+require_once( get_template_directory() . '/inc/theme-updater.php' );
+
+if ( is_admin() ) {
+    $config = array(
+        'slug' => 'wp-theme-boilerplate',
+        'owner' => 'jobayerarman',
+        'api_url' => 'http://api.github.com/repos/jobayerarman/wp-theme-boilerplate/releases'
+        );
+    new Theme_Updater( $config );
+}

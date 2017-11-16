@@ -141,12 +141,12 @@ var imagemin     = require('gulp-imagemin');         // Minify PNG, JPEG, GIF an
 
 // Github related plugins
 var fs           = require('fs');
+var semver       = require('semver');
 var git          = require('gulp-git');
 var bump         = require('gulp-bump');
 var shell        = require('gulp-shell');
 var prompt       = require('gulp-prompt');
 var replace      = require('gulp-replace');
-var gitChangelog = require('gulp-conventional-changelog');
 
 // Utility related plugins.
 var browserSync  = require('browser-sync').create(); // Reloads browser and injects CSS. Time-saving synchronised browser testing.
@@ -199,6 +199,147 @@ function errorLog(error) {
   this.emit('end');
 };
 
+
+/**
+ * Theme Dev Setup
+ *
+ * Task:
+ */
+gulp.task('update-function-name', function(done) {
+  return gulp.src([ './**/*.php' ])
+    .pipe(replace( 'wp_theme_boilerplate', theme ))
+    .pipe(gulp.dest( './' ))
+    done();
+});
+gulp.task('update-package-name', function(done) {
+  return gulp.src([ './**/*.php' ])
+    .pipe(replace( /(@package)(\s*)(.*)/, '$1$2' + package ))
+    .pipe(gulp.dest( './' ))
+    done();
+});
+gulp.task('update:all-name', gulpSequence('update-function-name', 'update-package-name'));
+
+/**
+ * Github release workflow
+ *
+ * Task: bump version
+ */
+function getPackageJsonVersion() {
+  return JSON.parse(fs.readFileSync('./package.json', 'utf8')).version;
+}
+
+gulp.task( 'bump-dialog', function (callback) {
+  var currentVersion = getPackageJsonVersion();
+  gulp.src('/', {read: false})
+    .pipe(prompt.prompt({
+      type: 'list',
+      name: 'bump',
+      message: 'What type of bump would you like to do?',
+      choices: ['patch', 'minor', 'major', 'prerelease']
+    },
+    function (res) {
+      var selectedChoice = res.bump;
+      var newVer = semver.inc(currentVersion, selectedChoice);
+
+      bumpFiles(newVer, callback);
+    }))
+});
+function bumpFiles(newVer, callback) {
+  var date = new Date();
+  var yyyy = date.getFullYear().toString();
+  var mm   = (date.getMonth()+1).toString(); // getMonth() is zero-based
+  var dd   = date.getDate().toString();
+  var dateHumanReadable = yyyy + '-' + (mm[1]?mm:"0"+mm[0]) + '-' + (dd[1]?dd:"0"+dd[0]);
+
+  gulp.src(['./package.json'])
+    .pipe(bump({version: newVer}).on('error', gutil.log))
+    .pipe(gulp.dest('./'))
+    .on('error', gutil.log);
+
+  gulp.src(['./style.css'])
+    .pipe(replace( /(Version:)(\s*)(.*)/, '$1$2' + newVer ))
+    .pipe(gulp.dest('./'))
+    .on('error', gutil.log);
+
+  gulp.src(['./CHANGELOG.md'])
+    .pipe(replace( /## unreleased/ig, '## v' + newVer + ' - ' + dateHumanReadable ))
+    .pipe(gulp.dest('./'))
+    .on('error', gutil.log);
+
+  callback();
+};
+
+/**
+ * Github release workflow
+ *
+ * Task: commit changes to github
+ */
+gulp.task( 'commit-changes', function () {
+  return gulp.src('.')
+    .pipe(git.add())
+    .pipe(git.commit('[Prerelease] Bumped version number'));
+});
+
+/**
+ * Github release workflow
+ *
+ * Task: push changes to github
+ */
+gulp.task( 'push-changes', function (cb) {
+  git.push( settings.remote, settings.branch.master, cb );
+});
+
+/**
+ * Github release workflow
+ *
+ * Task: release to github
+ */
+gulp.task('deploy', function() {
+  var version = getPackageJsonVersion();
+  return gulp.src('/', {read: false})
+  .pipe(shell(
+    [
+    'git checkout ' + settings.branch.master,
+    'git add --all',
+    'git commit -m "Auto-Commit for deployment "'+ version,
+    'git tag -a '+ version + '-dev -m "Version ' + version + '"',
+    'git push ' + settings.remote + ' ' + settings.branch.master + ' ' + version + '-dev',
+    'git checkout -B ' + settings.branch.dist,
+    'rm .gitignore',
+    'mv .gitignore-dist .gitignore',
+    'git rm -r --cached .',
+    'git add --all',
+    'git commit -m "build for release version "' + version,
+    'git tag -a '+ version + '-dist -m "Version ' + version + '"',
+    'git push --force ' + settings.remote + ' ' + settings.branch.dist + ' ' + version + '-dist',
+    'git checkout ' + settings.branch.master,
+    'git branch -D ' + settings.branch.dist,
+    'echo "Deployed Version: "' + version
+    ],
+    {ignoreErrors: true}));
+});
+gulp.task('release', function(cb) {
+  gulp.src('/')
+  .pipe(prompt.prompt([{
+    type: 'confirm',
+    name: 'task',
+    message: 'This will deploy to the ' + settings.branch.dist + ' Branch. It auto commits and pushes to the ' + settings.branch.master + '. Sure?'
+  }],
+  function(res) {
+    gulpSequence(
+      'bump:all',
+      'deploy',
+      function (error) {
+        if (error) {
+          gutil.log(error.message);
+        } else {
+          gutil.log('RELEASE FINISHED SUCCESSFULLY: ' + getPackageJsonVersion());
+        }
+        cb(error);
+      });
+  }));
+});
+
 /**
  * Task: Cleanup
  *
@@ -214,6 +355,13 @@ gulp.task('clean:build', function() {
   return del(build);
 });
 gulp.task('clean:all', gulpSequence('clean:css', 'clean:js', 'clean:build'));
+
+/**
+  * Clean gulp cache
+  */
+  gulp.task('clear', function () {
+    cache.clearAll();
+  });
 
 /**
  * Task: `browser-sync`.
@@ -245,133 +393,6 @@ gulp.task( 'browser-sync', function() {
     // The small pop-over notifications in the browser are not always needed/wanted
     notify: false,
   });
-});
-
-/**
- * Theme Dev Setup
- *
- * Task:
- */
-gulp.task('update-function-name', function(done) {
-  return gulp.src([ './**/*.php' ])
-    .pipe(replace( 'wp_theme_boilerplate', theme ))
-    .pipe(gulp.dest( './' ))
-    done();
-});
-gulp.task('update-package-name', function(done) {
-  return gulp.src([ './**/*.php' ])
-    .pipe(replace( 'wp-theme-boilerplate', package ))
-    .pipe(gulp.dest( './' ))
-    done();
-});
-gulp.task('update:all-name', gulpSequence('update-function-name', 'update-package-name'));
-
-/**
- * Github release workflow
- *
- * Task: bump version
- */
-gulp.task( 'bump-version', function (done) {
-  return gulp.src(['./package.json'])
-    .pipe(bump({type: 'patch'}).on('error', gutil.log))
-    .pipe(gulp.dest('./'))
-    done();
-});
-
-gulp.task('update-wp-style-css', function(done) {
-  return gulp.src(['./style.css'])
-    .pipe(replace( /(Version:)(\s*)(.*)/, '$1$2' + getPackageJsonVersion() ))
-    .pipe(gulp.dest('./'))
-    done();
-});
-
-gulp.task('bump:all', gulpSequence('bump-version', 'update-wp-style-css'));
-
-/**
- * Github release workflow
- *
- * Task: generate a changelog
- */
-gulp.task('changelog', function () {
-  return gulp.src('CHANGELOG.md', { buffer: false })
-    .pipe( gitChangelog({ preset: 'angular' }))
-    .pipe( gulp.dest('./') );
-});
-
-/**
- * Github release workflow
- *
- * Task: commit changes to github
- */
-gulp.task( 'commit-changes', function () {
-  return gulp.src('.')
-    .pipe(git.add())
-    .pipe(git.commit('[Prerelease] Bumped version number'));
-});
-
-/**
- * Github release workflow
- *
- * Task: push changes to github
- */
-gulp.task( 'push-changes', function (cb) {
-  git.push( settings.remote, settings.branch.master, cb );
-});
-
-function getPackageJsonVersion() {
-  return JSON.parse(fs.readFileSync('./package.json', 'utf8')).version;
-}
-
-/**
- * Github release workflow
- *
- * Task: release to github
- */
-gulp.task('release', function(cb) {
-  gulp.src('/')
-  .pipe(prompt.prompt([{
-    type: 'confirm',
-    name: 'task',
-    message: 'This will deploy to the ' + settings.branch.dist + ' Branch. It auto commits and pushes to the ' + settings.branch.master + '. Sure?'
-  }],
-  function(res) {
-    gulpSequence(
-      'bump:all',
-      'deploy',
-      function (error) {
-        if (error) {
-          console.log(error.message);
-        } else {
-          console.log('RELEASE FINISHED SUCCESSFULLY: ' + getPackageJsonVersion());
-        }
-        cb(error);
-      });
-  }));
-});
-
-gulp.task('deploy', function() {
-  var version = getPackageJsonVersion();
-  return gulp.src('/', {read: false})
-  .pipe(shell(
-    [
-    'git checkout ' + settings.branch.master,
-    'git add --all',
-    'git commit -m "Auto-Commit for deployment "'+ version,
-    'git tag -a '+ version + '-dev -m "Version' + version + '"',
-    'git push ' + settings.remote + ' ' + settings.branch.master + ' ' + version + '-dev',
-    'git checkout -B ' + settings.branch.dist,
-    'rm .gitignore',
-    'mv .gitignore-dist .gitignore',
-    'git rm -r --cached .',
-    'git add --all',
-    'git commit -m "build for release version "' + version,
-    'git tag -a '+ version + '-dist -m "Version' + version + '"',
-    'git push --force ' + settings.remote + ' ' + settings.branch.dist + ' ' + version + '-dist',
-    'git checkout ' + settings.branch.master,
-    'git branch -D ' + settings.branch.dist,
-    'echo "Deployed Version: "' + version
-    ],
-    {ignoreErrors: true}));
 });
 
 /**
@@ -479,13 +500,6 @@ gulp.task( 'translate', function() {
 });
 
 /**
-  * Clean gulp cache
-  */
-  gulp.task('clear', function () {
-    cache.clearAll();
-  });
-
-/**
   * Build task that moves essential theme files for production-ready sites
   *
   * buildFiles copies all the files in buildInclude to build folder - check variable values at the top
@@ -504,7 +518,7 @@ gulp.task( 'translate', function() {
   */
   gulp.task('buildZip', function () {
     return  gulp.src(build+'/**/')
-    .pipe(zip(project+'.zip'))
+    .pipe(zip(project + '.zip'))
     .pipe(gulp.dest('./'));
   });
 
